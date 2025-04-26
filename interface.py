@@ -1,15 +1,15 @@
 import os
 import shutil
+from pathlib import Path
 from PyQt5 import QtWidgets, QtGui, QtCore
 from ler_pdfs import process_pdfs_in_folder
-from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 
 FOLDER_NFS = str(BASE_DIR / "NFs")
 FOLDER_XMLS = str(BASE_DIR / "XMLs")
 OUTPUT_EXCEL = str(BASE_DIR / "output.xlsx")
-BACKGROUND_IMAGE = str(BASE_DIR / "img" / "background.png")
+BACKGROUND_IMAGE = str(BASE_DIR / "img" / "background.svg")
 LOGO_IMAGE = str(BASE_DIR / "img" / "imgLogo.png")
 ICON_SUCCESS = str(BASE_DIR / "img" / "iconSucess.png")
 ICON_ERROR = str(BASE_DIR / "img" / "iconError.png")
@@ -34,7 +34,7 @@ class DropArea(QtWidgets.QLabel):
                 font-size: 16px;
             }
             QLabel:hover {
-                border-color: #1acfdb;
+                border-color: #62bfc5;
                 background-color: rgba(245, 245, 245, 0.95);
             }
         """)

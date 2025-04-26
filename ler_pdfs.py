@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 import fitz  # PyMuPDF
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
@@ -119,8 +120,14 @@ def process_pdfs_in_folder(folder_path, output_folder, output_excel_path):
     limpar_pasta_nfs(folder_path)
 
 if __name__ == "__main__":
-    folder_path = r"C:\Users\S7U05260\OneDrive - Subsea7\Desktop\LeitorNFs\NFs"
-    output_folder = r"C:\Users\S7U05260\OneDrive - Subsea7\Desktop\LeitorNFs\XMLs"
-    output_excel_path = "output.xlsx"
+    base_path = Path(__file__).parent
+
+    folder_path = base_path / "NFs"
+    output_folder = base_path / "XMLs"
+    output_excel_path = base_path / "output.xlsx"
+
+    print(folder_path)
+    print(output_folder)
+    print(output_excel_path)
 
     process_pdfs_in_folder(folder_path, output_folder, output_excel_path)
