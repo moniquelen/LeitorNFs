@@ -35,34 +35,43 @@ def extrair_texto_do_xml(xml_path):
         print(f"[ERRO] Falha ao ler o arquivo XML: {e}")
         return ""
 
-def formatar_cte_number(cte_number):
-    if cte_number:
-        cte_number = re.sub(r'[^\d]', '', cte_number) 
-        cte_number = cte_number.lstrip('0')
-    return cte_number
+def extrair_valor(texto, padrao):
+    match = re.search(padrao, texto, flags=re.IGNORECASE)
+    if match:
+        valor_str = match.group(1)
+        valor_str = valor_str.replace('.', '').replace(',', '.').strip()
+        try:
+            return float(valor_str)
+        except ValueError:
+            print(f"[AVISO] Valor inválido para conversão: {valor_str}")
+            return 0.0
+    return 0.0
 
 def extrair_relevantes_com_regex(texto):
     texto = re.sub(r'\s+', ' ', texto)
 
     padrao_numero_nf = r'N[°º]\s?[.]?\s?\d{1,10}(?:\.\d{3})*|[0-9]{3}\.[0-9]{3}\.[0-9]{3}'
-    padrao_data_emissao = r'(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/[0-9]{4}'
-    padrao_valor_cte = r'(?:VALOR TOTAL DA PRESTAÇÃO DO SERVIÇO|VALOR TOTAL DO SERVIÇO)[^\d\n]*(\d[\d.,]*)'
-    padrao_valor_receber = r'VALOR A RECEBER[^\d\n]*(\d[\d.,]*)'
+    padrao_data_emissao = r'(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}'
 
-    cte_number = re.search(padrao_numero_nf, texto)
-    emission_date = re.search(padrao_data_emissao, texto)
-    cte_value_match = re.search(padrao_valor_cte, texto)
-    valor_receber_match = re.search(padrao_valor_receber, texto)
+    padrao_valor_cte = (
+        r'(?:VALOR TOTAL DA PRESTAÇÃO DO SERVIÇO|'
+        r'VALOR TOTAL DO SERVIÇO|'
+        r'VALOR TOTAL DA NOTA|'
+        r'VALOR TOTAL DA NF|'
+        r'VALOR LÍQUIDO|'
+        r'VALOR LÍQUIDO DA NOTA|'
+        r'VALOR A RECEBER)[^\d]*(\d[\d.,]*)'
+    )
 
-    cte_value = float(cte_value_match.group(1).replace('.', '').replace(',', '.')) if cte_value_match else 0
-    valor_receber = float(valor_receber_match.group(1).replace('.', '').replace(',', '.')) if valor_receber_match else 0
+    cte_number_match = re.search(padrao_numero_nf, texto)
+    emission_date_match = re.search(padrao_data_emissao, texto)
 
-    cte_value_final = max(cte_value, valor_receber)
+    cte_value = extrair_valor(texto, padrao_valor_cte)
 
     return {
-        "CTe Number": formatar_cte_number(cte_number.group(0)) if cte_number else "N/A",
-        "CTe Value": f"{cte_value_final:,.2f}" if cte_value_final else "N/A",
-        "Emission Date": emission_date.group(0) if emission_date else "N/A",
+        "CTe Number": cte_number_match.group(0).strip() if cte_number_match else "N/A",
+        "CTe Value": f"{cte_value:,.2f}" if cte_value else "N/A",
+        "Emission Date": emission_date_match.group(0) if emission_date_match else "N/A",
     }
 
 def process_single_pdf(pdf_path, output_folder):
