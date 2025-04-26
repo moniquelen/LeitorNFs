@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 def converter_pdf_para_xml(pdf_path, output_folder):
     try:
         os.makedirs(output_folder, exist_ok=True)
-
         xml_filename = os.path.splitext(os.path.basename(pdf_path))[0] + ".xml"
         xml_path = os.path.join(output_folder, xml_filename)
 
@@ -52,6 +51,7 @@ def extrair_relevantes_com_regex(texto):
 
     padrao_numero_nf = r'N[°º]\s?[.]?\s?\d{1,10}(?:\.\d{3})*|[0-9]{3}\.[0-9]{3}\.[0-9]{3}'
     padrao_data_emissao = r'(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}'
+    padrao_cnpj = r'\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}'
 
     padrao_valor_cte = (
         r'(?:VALOR TOTAL DA PRESTAÇÃO DO SERVIÇO|'
@@ -65,13 +65,15 @@ def extrair_relevantes_com_regex(texto):
 
     cte_number_match = re.search(padrao_numero_nf, texto)
     emission_date_match = re.search(padrao_data_emissao, texto)
+    cnpj_match = re.search(padrao_cnpj, texto)
 
     cte_value = extrair_valor(texto, padrao_valor_cte)
 
     return {
-        "CTe Number": cte_number_match.group(0).strip() if cte_number_match else "N/A",
-        "CTe Value": f"{cte_value:,.2f}" if cte_value else "N/A",
-        "Emission Date": emission_date_match.group(0) if emission_date_match else "N/A",
+        "Numero da NF": cte_number_match.group(0).strip() if cte_number_match else "N/A",
+        "Valor da NF": f"{cte_value:,.2f}" if cte_value else "N/A",
+        "Data de Emissão": emission_date_match.group(0) if emission_date_match else "N/A",
+        "CNPJ": cnpj_match.group(0) if cnpj_match else "N/A",
     }
 
 def process_single_pdf(pdf_path, output_folder):
@@ -80,18 +82,18 @@ def process_single_pdf(pdf_path, output_folder):
     xml_path = converter_pdf_para_xml(pdf_path, output_folder)
     if not xml_path:
         print(f"[ERRO] Falha ao converter o PDF {os.path.basename(pdf_path)} para XML.")
-        return [os.path.basename(pdf_path), "N/A", "N/A", "N/A"]
+        return [os.path.basename(pdf_path), "N/A", "N/A", "N/A", "N/A"]
 
     texto = extrair_texto_do_xml(xml_path)
     if not texto:
         print(f"[ERRO] Nenhum texto extraído do XML gerado para {os.path.basename(pdf_path)}.")
-        return [os.path.basename(pdf_path), "N/A", "N/A", "N/A"]
+        return [os.path.basename(pdf_path), "N/A", "N/A", "N/A", "N/A"]
 
     info = extrair_relevantes_com_regex(texto)
 
     print(f"[INFO] Dados extraídos do arquivo {os.path.basename(pdf_path)}: {info}")
 
-    return [os.path.basename(pdf_path), info["CTe Number"], info["CTe Value"], info["Emission Date"]]
+    return [os.path.basename(pdf_path), info["Numero da NF"], info["Valor da NF"], info["Data de Emissão"], info["CNPJ"]]
 
 def limpar_pasta_xml(output_folder):
     """Remove todos os arquivos XML da pasta especificada."""
@@ -120,7 +122,7 @@ def process_pdfs_in_folder(folder_path, output_folder, output_excel_path):
     with ThreadPoolExecutor() as executor:
         data = list(executor.map(process_single_pdf, [os.path.join(folder_path, f) for f in files], [output_folder] * len(files)))
 
-    df = pd.DataFrame(data, columns=["Filename", "CTe Number", "CTe Value", "Emission Date"])
+    df = pd.DataFrame(data, columns=["Arquivo", "Numero da NF", "Valor da NF", "Data de Emissão", "CNPJ"])
     df.to_excel(output_excel_path, index=False)
     print(f"[INFO] Processamento concluído. Dados salvos em: {output_excel_path}")
 
