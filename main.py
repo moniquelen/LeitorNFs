@@ -9,12 +9,12 @@ BASE_DIR = Path(__file__).parent
 FOLDER_NFS = str(BASE_DIR / "NFs")
 FOLDER_XMLS = str(BASE_DIR / "XMLs")
 OUTPUT_EXCEL = str(BASE_DIR / "output.xlsx")
-BACKGROUND_IMAGE = str(BASE_DIR / "img" / "background.svg")
-LOGO_IMAGE = str(BASE_DIR / "img" / "imgLogo.png")
-ICON_SUCCESS = str(BASE_DIR / "img" / "iconSucess.png")
-ICON_ERROR = str(BASE_DIR / "img" / "iconError.png")
-ICON_DELETE = str(BASE_DIR / "img" / "iconDelete.png")
-ICON_NFS = str(BASE_DIR / "img" / "imgNFs.png")
+BACKGROUND_IMAGE = str(BASE_DIR / "static" / "img" / "background.svg")
+LOGO_IMAGE = str(BASE_DIR / "static" / "img" / "imgLogo.png")
+ICON_SUCCESS = str(BASE_DIR / "static" / "img" / "iconSucess.png")
+ICON_ERROR = str(BASE_DIR / "static" / "img" / "iconError.png")
+ICON_DELETE = str(BASE_DIR / "static" / "img" / "iconDelete.png")
+ICON_NFS = str(BASE_DIR / "static" / "img" / "imgNFs.png")
 
 class DropArea(QtWidgets.QLabel):
     def __init__(self, main_window, parent=None):
